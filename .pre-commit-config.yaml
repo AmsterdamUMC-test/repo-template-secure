@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/AmsterdamUMC-test/org-security-workflows
-    rev: v0.1.1
+    rev: v0.1.2
     hooks:
       - id: check-forbidden-filetypes
         stages: [pre-commit]
