@@ -9,3 +9,4 @@ on:
 jobs:
   security-scan:
     uses: AmsterdamUMC-test/org-security-workflows/.github/workflows/check-forbidden-filetypes.yml@main
+    secrets: inherit
