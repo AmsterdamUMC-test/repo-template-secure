@@ -8,7 +8,7 @@ This repository is based on a GitHub template designed for researchers. It helps
 
 ---
 
-## What’s Included
+## What's Included
 
 | File or Folder             | Purpose                                                   |
 |----------------------------|-----------------------------------------------------------|
@@ -27,11 +27,11 @@ This repository is based on a GitHub template designed for researchers. It helps
 
 ## Getting Started
 
-1. Click the green **“Use this template”** button on GitHub.
+1. Click the green **"Use this template"** button on GitHub.
 2. Create a **new, private** repository for your research project.
 3. Replace this file with the included [`README-template.md`](README-template.md), which is meant for your own project description.
 
-> Tip: If you’re working with others, you can create a new branch for your changes using:
+> Tip: If you're working with others, you can create a new branch for your changes using:
 >
 > ```bash
 > git checkout -b my-analysis
@@ -39,16 +39,24 @@ This repository is based on a GitHub template designed for researchers. It helps
 
 ---
 
-### Optional: Enable Pre-Commit Checks
+## Recommended: Enable Pre-Commit and Pre-Push Hooks
 
-You can install `pre-commit` to catch large files and formatting issues before you commit.
+We strongly recommend installing `pre-commit` to catch sensitive files **before** they're committed or pushed.
 
 ```bash
+# Install pre-commit
 pip install pre-commit
+
+# Enable both hooks
 pre-commit install
+pre-commit install --hook-type pre-push
 ```
 
-This step is optional, but helpful!
+This gives you two layers of protection:
+- **Pre-commit**: Checks files when you run `git commit`
+- **Pre-push**: Final check when you run `git push`
+
+See [docs/security-workflows.md](docs/security-workflows.md) for details.
 
 ---
 
@@ -56,7 +64,6 @@ This step is optional, but helpful!
 
 - [docs/overview.md](docs/overview.md): what this template is for
 - [docs/data-handling.md](docs/data-handling.md): how to work safely with data
-- [docs/reproducibility.md](docs/reproducibility.md): making your project easy to repeat
 - [docs/security-workflows.md](docs/security-workflows.md): what the automatic checks do
 - [docs/faq.md](docs/faq.md): common questions, answered
 
@@ -65,7 +72,7 @@ This step is optional, but helpful!
 ## Security Notice
 
 This template helps prevent common mistakes, but always double-check before committing anything sensitive.
-If you’re not sure, ask someone on your team or see [`SECURITY.md`](SECURITY.md).
+If you're not sure, ask someone on your team or see [`SECURITY.md`](SECURITY.md).
 
 ### Note on Public Repos
 
