@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/AmsterdamUMC-test/org-security-workflows
-    rev: main # TODO: pin to a specific tag or commit hash for stability
+    rev: v0.1.0 # TODO: pin to a specific tag or commit hash for stability
     hooks:
       - id: check-forbidden-filetypes
         stages: [pre-commit]
