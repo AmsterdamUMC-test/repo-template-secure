@@ -1,8 +1,11 @@
 repos:
-  - repo: https://github.com/bavadeve/org-security-workflows
-    rev: 4d1922889a73693bb13a46502535d2864529eb98 # or use a specific tag or commit hash
+  - repo: https://github.com/AmsterdamUMC-test/org-security-workflows
+    rev: main # TODO: pin to a specific tag or commit hash for stability
     hooks:
       - id: check-forbidden-filetypes
+        stages: [pre-commit]
+      - id: check-forbidden-filetypes-prepush
+        stages: [pre-push]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
