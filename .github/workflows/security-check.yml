@@ -8,4 +8,4 @@ on:
 
 jobs:
   security-scan:
-    uses: bavadeve/org-security-workflows/.github/workflows/check-forbidden-filetypes.yml@main
+    uses: AmsterdamUMC-test/org-security-workflows/.github/workflows/check-forbidden-filetypes.yml@main
