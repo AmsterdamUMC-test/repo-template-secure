@@ -29,13 +29,15 @@ This repository is based on a GitHub template designed for researchers. It helps
 
 1. Click the green **"Use this template"** button on GitHub.
 2. Create a **new, private** repository for your research project.
-3. Replace this file with the included [`README-template.md`](README-template.md), which is meant for your own project description.
+3. Clone your new repository to your local machine.
 
-> Tip: If you're working with others, you can create a new branch for your changes using:
->
-> ```bash
-> git checkout -b my-analysis
-> ```
+## First Steps After Creating Your Repo
+
+- [ ] Replace this README with [`README-template.md`](README-template.md), filling in your project details. Keep this README somewhere else for reference.
+- [ ] Update `CITATION.cff` with your project details
+- [ ] Install pre-commit hooks (see below)
+- [ ] Add collaborators if needed (Settings → Collaborators)
+- [ ] Review `.gitignore` and add project-specific patterns
 
 ---
 
@@ -73,6 +75,16 @@ See [docs/security-workflows.md](docs/security-workflows.md) for details.
 
 This template helps prevent common mistakes, but always double-check before committing anything sensitive.
 If you're not sure, ask someone on your team or see [`SECURITY.md`](SECURITY.md).
+
+## Accidentally Committed Sensitive Data?
+
+**Don't panic, but act fast:**
+
+1. Do NOT try to fix it yourself — this can make it worse
+2. Contact [security team / data steward email] immediately
+3. See [`SECURITY.md`](SECURITY.md) for detailed steps
+
+Time matters — the sooner you report, the easier it is to fix.
 
 ### Note on Public Repos
 
