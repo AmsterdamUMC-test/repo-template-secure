@@ -109,16 +109,6 @@ rm test.csv
 - **Never commit data files** — even "anonymized" data may contain identifiers
 - **Use the `/data/` folder** for local data. It's excluded from Git by .gitignore.
 
-
-  ```python
-  # Bad
-  data = pd.read_csv("/home/user/patient_data.csv")
-
-  # Good
-  import os
-  data = pd.read_csv(os.environ["DATA_PATH"])
-  ```
-
 ### Secrets & Credentials
 
 - **Never commit secrets** — no API keys, passwords, or tokens in code
