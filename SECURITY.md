@@ -1,109 +1,256 @@
 # Security Policy
 
-This repository is part of a Amsterdam UMC research environment that handles potentially confidential data and code. To minimize risks of data leaks and protect research integrity, we follow strict security protocols throughout the Git development lifecycle.
+This repository is part of the Amsterdam UMC research environment. To protect patient privacy and research integrity, we enforce strict security controls throughout the Git development lifecycle.
 
 ---
 
 ## Scope
 
-This policy applies to **GitHub-related threats only**, including:
+This policy covers **GitHub-related threats**, including:
 
-- Accidental inclusion of confidential data (e.g., `.csv`, `.RData`, `.env`, `.xlsx`) in commits, pull requests, or issues.
-- Unauthorized access to private repositories or GitHub Actions.
-- Abuse of GitHub features such as Apps, Pages, or CI/CD pipelines.
+- Accidental commits of confidential data (patient data, credentials, research datasets)
+- Unauthorized access to private repositories
+- Secrets or API keys in code
+- Sensitive data remaining in Git history
 
-Out of scope: Leaks via local runtime or SPE-contained environments (e.g., myDRE).
+**Out of scope:** Data handling within secure processing environments (e.g., myDRE, SURF Research Cloud).
+
+---
+
+## Protection Layers
+
+We use a multi-layered approach to prevent data leaks:
+
+| Layer | When | What It Does |
+|-------|------|--------------|
+| `.gitignore` | Always | Prevents Git from tracking sensitive file types |
+| `pre-commit` hook | On `git commit` | Blocks commits containing forbidden files locally |
+| `pre-push` hook | On `git push` | Final local check before code leaves your machine |
+| GitHub Actions | On push/PR | Server-side enforcement — fails if forbidden files detected |
+| Telemetry alerts | On violation | Security team notified immediately of any blocked files |
+
+---
+
+## Forbidden File Types
+
+The following file types are **blocked at all layers** and cannot be committed:
+
+### Data Files
+| Category | Extensions |
+|----------|------------|
+| Tabular data | `.csv`, `.tsv`, `.xlsx`, `.xls` |
+| Statistical formats | `.sav`, `.dta`, `.RData`, `.rds`, `.por`, `.sas7bdat`, `.xpt` |
+| Binary data | `.feather`, `.parquet`, `.pickle`, `.pkl` |
+| HDF5 | `.h5`, `.hdf5`, `.he5`, `.fast5` |
+| Databases | `.sqlite`, `.db` |
+
+### Medical & Research Data
+| Category | Extensions |
+|----------|------------|
+| Neuroimaging | `.nii`, `.nii.gz`, `.dcm` |
+| Biosignals | `.edf`, `.bdf`, `.eeg`, `.vhdr`, `.vmrk` |
+| Genomics | `.fastq`, `.fastq.gz`, `.fasta`, `.bam`, `.sam`, `.vcf`, `.gtf`, `.gff`, `.bed` |
+
+### Credentials & Secrets
+| Category | Extensions/Files |
+|----------|------------------|
+| Environment files | `.env`, `.env.*` |
+| Keys & certificates | `.key`, `.pem`, `.pfx`, `.crt`, `.p12`, `.jks` |
+| SSH keys | `id_rsa`, `id_ed25519` |
+
+### Other
+| Category | Extensions |
+|----------|------------|
+| Archives | `.zip`, `.tar.gz`, `.7z`, `.rar` |
+| Media (may contain patient data) | `.mp4`, `.avi`, `.mov`, `.wav` |
+| JSON/XML | Blocked by default with exceptions for config files |
+
+For the complete list, see [`.gitignore`](.gitignore) (patterns between `# BEGIN FORBIDDEN` and `# END FORBIDDEN`).
+
+---
+
+## Setup Instructions
+
+### 1. Install Pre-Commit Hooks (Required)
+
+Every contributor must install the local hooks:
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Enable both commit and push hooks
+pre-commit install
+pre-commit install --hook-type pre-push
+```
+
+This provides two layers of local protection before code ever reaches GitHub.
+
+### 2. Verify Your Setup
+
+Test that the hooks are working:
+
+```bash
+# This should fail
+echo "test" > test.csv
+git add test.csv
+git commit -m "test"  # Should be blocked!
+
+# Clean up
+rm test.csv
+```
 
 ---
 
 ## Best Practices
 
-### 1. Prevent Confidential Data Exposure
+### Data Handling
 
-- Never commit files with the following extensions:
+- **Never commit data files** — even "anonymized" data may contain identifiers
+- **Use the `/data/` folder** for local data. It's excluded from Git by .gitignore.
 
-  - `.csv`, `.xlsx`, `.sav`, `.RData`, `.json`, `.env`, `.pem`, `.key`, `.pfx`
 
-- Make sure all that these extensions are added to the `.gitignore` file
-- Store data files in /data/ folder. Add `/data/` to `.gitignore`.
-- Never hardcode paths to sensitive files — use environment variables instead
-- Do not write secrets (tokens, keys, passwords) in code, comments, or documentation
+  ```python
+  # Bad
+  data = pd.read_csv("/home/user/patient_data.csv")
 
-### 2. Commit & Pull Request Hygiene
+  # Good
+  import os
+  data = pd.read_csv(os.environ["DATA_PATH"])
+  ```
 
-We recommend using [`pre-commit`](https://pre-commit.com/) to catch common issues **before commits are made**. This is a local tool that:
+### Secrets & Credentials
 
-- Warns about large files (>100KB)
-- Removes trailing whitespace
-- Blocks commits with unresolved merge conflicts
+- **Never commit secrets** — no API keys, passwords, or tokens in code
+- **Use `.env` files locally** — they're blocked from commits
+- **Use GitHub Secrets** for CI/CD workflows
+- **Rotate any exposed credential immediately**
 
-> ⚠️ This tool is must be manually installed by each contributor.
+### General Hygiene
 
-**To enable it:**
-
-```bash
-pip install pre-commit
-pre-commit install
-```
-
-It will then run automatically on each `git commit`.
-See `.pre-commit-config.yaml` in this repository for configuration.
-
-- Include a checklist in each pull request to confirm that:
-  - [ ] No data or secrets are included
-  - [ ] `.gitignore` is up to date
-
-### 3. GitHub Actions & CI/CD
-
-GitHub Actions CI is used to enforce security policy across all contributors. It includes:
-
-- A workflow that blocks commits of high-risk file types (`.csv`, `.xlsx`, `.env`, etc.)
-- Optional secret scanning or environment enforcement (via reusable workflows)
-
-These checks run on:
-
-- Every push to `main` or `master`
-- Every pull request
-
-❌ If a violation is detected, the workflow fails and the PR cannot be merged.
-
-### 4. Repository Access
-
-- Use 2FA on your GitHub account
-- Restrict private repo access to verified collaborators only
-- Review access regularly
-- Do not make a repo public without a full data/code audit
+- Start repositories as **private** by default
+- Review changes before committing: `git diff --staged`
+- Keep commits small and focused
+- Write meaningful commit messages
 
 ---
 
-## If a Leak Happens
+## What Happens on Violation
 
-1. **Public Repo**:
-   - Immediately set the repo to private or take it offline
-   - Contact the privacy officer or project lead
-   - Scrub history using [`git filter-repo`](https://github.com/newren/git-filter-repo) or [`BFG`](https://rtyley.github.io/bfg-repo-cleaner/)
-   - Notify any collaborators or affected parties
+If you try to commit a forbidden file:
 
-2. **Private Repo**:
-   - Audit access logs
-   - Review push/clone/download events
-   - Proceed with full data removal as above
+### Locally (pre-commit/pre-push)
+
+```
+❌ Forbidden file detected: data.csv
+   Blocked by: *.csv pattern in central-gitignore.txt
+
+   This file cannot be committed. If you believe this is
+   an error, contact your data steward.
+```
+
+Your commit/push will be blocked. No data leaves your machine.
+
+### On GitHub (if local hooks bypassed)
+
+1. The GitHub Action fails
+2. The security team receives an automated alert with:
+   - Repository name
+   - File(s) that triggered the alert
+   - Who pushed the commit
+   - Timestamp
+3. An issue is created for tracking
+4. You will be contacted for remediation
+
+---
+
+## Accidentally Committed Sensitive Data?
+
+**Act immediately.** Git keeps full history — deleting a file doesn't remove it from the repository.
+
+### Step 1: Stop and Assess
+
+- **Don't panic**, but don't delay
+- **Don't try to fix it yourself** if you're unsure — you might make it worse
+- Note down: what file, what repo, when committed, is the repo public or private?
+
+### Step 2: Report
+
+Contact the security team immediately:
+
+- **Email:** [security contact email]
+- **Do NOT open a public GitHub issue**
+
+Include:
+
+- Repository name
+- Description of what was exposed
+- Approximate time of commit
+
+### Step 3: Remediation (with guidance)
+
+The security team will help you:
+
+1. **Contain:** Make repo private if public
+2. **Remove from history:** Using `git filter-repo` or BFG Repo-Cleaner
+3. **Force push:** Replace the repository history
+4. **Notify collaborators:** They must re-clone
+5. **Invalidate secrets:** Rotate any exposed credentials
+6. **Document:** Record the incident per institutional policy
+
+### Tools for History Cleaning
+
+```bash
+# Using BFG (easier)
+bfg --delete-files "*.csv" my-repo.git
+
+# Using git filter-repo (more powerful)
+git filter-repo --path data.csv --invert-paths
+```
+
+**Warning:** These tools rewrite Git history. All collaborators must re-clone the repository afterward.
+
+---
+
+## Repository Access
+
+- **Enable 2FA** on your GitHub account (required)
+- **Keep repositories private** unless explicitly approved for public release
+- **Review collaborator access** regularly
+- **Before making a repo public:**
+  - [ ] Security scan passes
+  - [ ] Full history reviewed for sensitive data
+  - [ ] README, LICENSE, and documentation complete
+  - [ ] Approved by project lead / data steward
 
 ---
 
 ## Reporting a Vulnerability
 
-If you notice a vulnerability or accidental exposure:
+If you discover a security issue:
 
-- Do **not** open a public issue
-- Contact the repository owner or institutional data officer privately
-- Include the repo name, date, and general description of the issue
-- Avoid including any actual sensitive content in your report
+1. **Do NOT open a public issue**
+2. Contact the repository owner or security team privately
+3. Include:
+   - Repository name
+   - Description of the vulnerability
+   - Steps to reproduce (if applicable)
+4. **Do NOT include actual sensitive data** in your report
 
 ---
 
 ## References
 
-- [GitHub Actions: Security best practices](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
-- [Trusted CI: Guide to Securing Scientific Software](https://trustedci.org/guide)
-- [OWASP CIA + AAA Security Principles](https://owasp.org/www-project-cornucopia/)
+- [GitHub Security Best Practices](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+- [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/)
+- [git filter-repo](https://github.com/newren/git-filter-repo)
+- [Amsterdam UMC Data Management Policy](#) <!-- Add your institutional link -->
+- [GDPR Guidelines for Research](https://gdpr.eu/)
+
+---
+
+## Questions?
+
+- Check [docs/faq.md](docs/faq.md) for common questions
+- Contact your data steward or project lead
+- See [CONTRIBUTING.md](CONTRIBUTING.md) for collaboration guidelines
