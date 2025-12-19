@@ -1,5 +1,4 @@
 name: Org Security Scan
-
 on:
   push:
     branches: [main, master]
@@ -7,6 +6,10 @@ on:
     branches: [main, master]
 
 jobs:
-  security-scan:
+  filetype-check:
     uses: AmsterdamUMC-test/org-security-workflows/.github/workflows/check-forbidden-filetypes.yml@main
+    secrets: inherit
+
+  personal-info-check:
+    uses: AmsterdamUMC-test/org-security-workflows/.github/workflows/check-personal-info.yml@main
     secrets: inherit
